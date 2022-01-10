@@ -134,9 +134,11 @@ class DIDN(nn.Module):
         
         self.mid2 = nn.Conv2d(2*N*nDub, 4*N, kernel_size=1,padding=0)
         self.c2 = nn.Conv2d(4*N, 4*N, kernel_size=3,padding=1)
+        self.r2  =nn.PReLU()
         self.u2  =nn.PixelShuffle(2)
         
         self.finconv = nn.Conv2d(N, in_ch, kernel_size=3,padding=1)
+        self.finrel = nn.PReLU()
         self.nDub =nDub
         
     def forward(self,x):
@@ -148,9 +150,9 @@ class DIDN(nn.Module):
             out.append(out1)
         out = torch.cat(out,1)
         out = self.mid2(out)
-        out = out + self.c2(out)
+        out = out + self.r2(self.c2(out))
         out = self.u2(out)
-        out = self.finconv(out)+x
+        out = self.finrel(self.finconv(out))+x
         return out
         
         
